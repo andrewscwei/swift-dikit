@@ -26,23 +26,24 @@ enum Environment: String {
   }
 }
 
+var dependencies: [Package.Dependency] = [
+]
+
 let package = Package(
-    name: "DIKit",
-    products: [
-        .library(
-            name: "DIKit",
-            targets: ["DIKit"]),
-    ],
-    dependencies: [
-    ],
-    targets: [
-        // Targets are the basic building blocks of a package. A target can define a module or a test suite.
-        // Targets can depend on other targets in this package, and on products in packages this package depends on.
-        .target(
-            name: "DIKit",
-            dependencies: []),
-        .testTarget(
-            name: "DIKitTests",
-            dependencies: ["DIKit"]),
-    ]
+  name: "DIKit",
+  platforms: [.iOS(.v11)],
+  products: [
+    .library(
+      name: "DIKit",
+      targets: ["DIKit"]),
+  ],
+  dependencies: dependencies,
+  targets: [
+    .target(
+      name: "DIKit",
+      dependencies: []),
+    .testTarget(
+      name: "DIKitTests",
+      dependencies: ["DIKit"]),
+  ]
 )
