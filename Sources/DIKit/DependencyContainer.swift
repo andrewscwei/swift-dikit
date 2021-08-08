@@ -8,7 +8,7 @@ public class DependencyContainer {
   /// Factory method for creating instances of dependency `T`.
   public typealias Factory<T> = () -> T
 
-  /// Returns the singleton `DependencyInjectionContainer` instance.
+  /// Returns the singleton `DependencyContainer` instance.
   public static let `default` = DependencyContainer()
 
   /// Private initializer to ensure singleton instance.
@@ -22,9 +22,10 @@ public class DependencyContainer {
   ///
   /// - Parameters:
   ///   - type: The type of the dependency.
+  ///   - tag: A tag to associate with the type (to allow providing different implementations for the same type).
   ///   - component: The singleton instance of the dependency to provide when resolving.
-  public func register<T>(_ type: T.Type, component: T) {
-    let key = "\(type)"
+  public func register<T>(_ type: T.Type, tag: String = "", component: T) {
+    let key = "\(type)@\(tag)"
     dependencies[key] = component
   }
 
@@ -32,31 +33,35 @@ public class DependencyContainer {
   ///
   /// - Parameters:
   ///   - type: The type of the dependency.
+  ///   - tag: A tag to associate with the type (to allow providing different implementations for the same type).
   ///   - factory: The factory function.
-  public func register<T>(_ type: T.Type, factory: @escaping Factory<T>) {
-    let key = "\(type)"
+  public func register<T>(_ type: T.Type, tag: String = "", factory: @escaping Factory<T>) {
+    let key = "\(type)@\(tag)"
     dependencies[key] = factory
   }
 
   /// Unregisters a dependency from the container.
   ///
-  /// - Parameter type: The type of the dependency.
-  public func unregister<T>(_ type: T.Type) {
-    let key = "\(type)"
+  /// - Parameters:
+  ///   - type: The type of the dependency.
+  ///   - tag: A tag to associate with the type (to allow providing different implementations for the same type).
+  public func unregister<T>(_ type: T.Type, tag: String = "") {
+    let key = "\(type)@\(tag)"
     dependencies.removeValue(forKey: key)
   }
 
   /// Resolves a dependency and returns an instance of the dependency depndending on how it was registered. If it was
   /// registered as a singleton, the same instance of the dependency will always be returned. If it was registered as a
-  /// factory function, a new instance of the dependency will be returned. Note that the app will terminate immedciate
+  /// factory function, a new instance of the dependency will be returned. Note that the app will terminate immediately
   /// if attempting to resolve an unregistered dependency.
   ///
   /// - Parameters:
   ///   - type: The type of the dependency.
+  ///   - tag: A tag to associate with the type (to allow providing different implementations for the same type).
   ///
   /// - Returns: An instance of the dependency.
-  public func resolve<T>(_ type: T.Type = T.self) -> T {
-    let key = "\(T.self)"
+  public func resolve<T>(_ type: T.Type = T.self, tag: String = "") -> T {
+    let key = "\(T.self)@\(tag)"
     var component: T?
 
     if let factory = dependencies[key] as? Factory<T> {
