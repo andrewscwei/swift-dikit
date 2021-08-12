@@ -2,8 +2,8 @@
 
 import Foundation
 
-/// Injects the dependency into the wrapped property, assuming that the dependency was previously registered with the
-/// `DependencyContainer`.
+/// Injects the dependency into the wrapped property, assuming that the dependency was previously
+/// registered with the `DependencyContainer`.
 @propertyWrapper
 public struct Inject<T> {
 
