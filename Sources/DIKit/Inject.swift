@@ -11,8 +11,20 @@ public struct Inject<T> {
   private let tag: String
 
   public var wrappedValue: T {
-    get { value ?? DependencyContainer.default.resolve(T.self, tag: tag) }
-    set { value = newValue }
+    mutating get {
+      if let dependency = value {
+        return dependency
+      }
+      else {
+        let dependency = DependencyContainer.default.resolve(T.self, tag: tag)
+        value = dependency
+        return dependency
+      }
+    }
+
+    set {
+      value = newValue
+    }
   }
 
   public init(_ tag: String = "") {
