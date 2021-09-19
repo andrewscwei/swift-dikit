@@ -8,7 +8,8 @@ import Foundation
 public struct Inject<T> {
 
   private var value: T?
-  private let tag: String
+  private let tag: String?
+  private let scope: String?
 
   public var wrappedValue: T {
     mutating get {
@@ -16,7 +17,7 @@ public struct Inject<T> {
         return dependency
       }
       else {
-        let dependency = DependencyContainer.default.resolve(T.self, tag: tag)
+        let dependency = DependencyContainer.default.resolve(T.self, tag: tag, scope: scope)
         value = dependency
         return dependency
       }
@@ -27,7 +28,8 @@ public struct Inject<T> {
     }
   }
 
-  public init(_ tag: String = "") {
+  public init(_ tag: String? = nil, scope: String? = nil) {
     self.tag = tag
+    self.scope = scope
   }
 }

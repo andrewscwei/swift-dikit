@@ -1,5 +1,6 @@
 // © Sybl
 
+import BaseKit
 import Foundation
 
 /// Singleton dependency injection container.
@@ -14,32 +15,24 @@ public class DependencyContainer {
   /// Private initializer to ensure singleton instance.
   private init() {}
 
-  /// Dictionary of registered dependencies, where the key is the dependency type and the value is
-  /// either a singleton instance of the dependency or a factory function of the dependency.
-  private var dependencies: [String: Any] = [:]
+  /// Dictionary of factory methods for registered dependencies, where the key made up of the
+  /// dependency type plus its associated tag at the time of registration.
+  private var factories: [String: Factory<Any>] = [:]
 
-  /// Registers a dependency as a singleton instance with the container.
-  ///
-  /// - Parameters:
-  ///   - type: The type of the dependency.
-  ///   - tag: A tag to associate with the type (to allow providing different implementations for
-  ///          the same type).
-  ///   - component: The singleton instance of the dependency to provide when resolving.
-  public func register<T>(_ type: T.Type, tag: String = "", component: T) {
-    let key = "\(type)@\(tag)"
-    dependencies[key] = component
-  }
+  /// Dictionary of instantiated dependencies, where the key is made up of the dependency type. its
+  /// associated tag at the time of registration, and its scope at the time of resolution.
+  private var dependencies: [String: WeakReference<Any>] = [:]
 
-  /// Registers a dependency as a factory function with the container.
+  /// Registers a dependency with the container. The dependency is instantiated at resolve time.
   ///
   /// - Parameters:
   ///   - type: The type of the dependency.
   ///   - tag: A tag to associate with the type (to allow providing different implementations for
   ///          the same type).
   ///   - factory: The factory function.
-  public func register<T>(_ type: T.Type, tag: String = "", factory: @escaping Factory<T>) {
-    let key = "\(type)@\(tag)"
-    dependencies[key] = factory
+  public func register<T>(_ type: T.Type = T.self, tag: String? = nil, factory: @escaping Factory<T>) {
+    let key = generateKey(for: type, tag: tag, scope: nil)
+    factories[key] = factory
   }
 
   /// Unregisters a dependency from the container.
@@ -48,36 +41,54 @@ public class DependencyContainer {
   ///   - type: The type of the dependency.
   ///   - tag: A tag to associate with the type (to allow providing different implementations for
   ///          the same type).
-  public func unregister<T>(_ type: T.Type, tag: String = "") {
-    let key = "\(type)@\(tag)"
-    dependencies.removeValue(forKey: key)
+  public func unregister<T>(_ type: T.Type = T.self, tag: String = "") {
+    let key = generateKey(for: type, tag: tag, scope: nil)
+    factories.removeValue(forKey: key)
   }
 
-  /// Resolves a dependency and returns an instance of the dependency depndending on how it was
-  /// registered. If it was registered as a singleton, the same instance of the dependency will
-  /// always be returned. If it was registered as a factory function, a new instance of the
-  /// dependency will be returned. Note that the app will terminate immediately if attempting to
-  /// resolve an unregistered dependency.
+  /// Resolves a dependency and returns an instance of the dependency matching its registered tag.
+  /// Option to specify a scope, which if left unspecified as `nil`, will assume the global scope.
+  /// When resolving this dependency, the same instance matching this scope name will always be
+  /// returned. If an instance is not found, it will be instantiated using the registered factory.
+  /// Note that the app will terminate immediately if attempting to resolve an unregistered
+  /// dependency (the type and tag must match).
   ///
   /// - Parameters:
   ///   - type: The type of the dependency.
   ///   - tag: A tag to associate with the type (to allow providing different implementations for
   ///          the same type).
+  ///   - scope: An optional scope name for the dependency.
   ///
   /// - Returns: An instance of the dependency.
-  public func resolve<T>(_ type: T.Type = T.self, tag: String = "") -> T {
-    let key = "\(T.self)@\(tag)"
-    var component: T?
+  public func resolve<T>(_ type: T.Type = T.self, tag: String? = nil, scope: String? = nil) -> T {
+    let factoryKey = generateKey(for: T.self, tag: tag, scope: nil)
+    let instanceKey = generateKey(for: T.self, tag: tag, scope: scope)
 
-    if let factory = dependencies[key] as? Factory<T> {
-      component = factory()
+    if let component = dependencies[instanceKey]?.get() as? T {
+      return component
     }
-    else if let singleton = dependencies[key] as? T {
-      component = singleton
+    else if let factory = factories[factoryKey], let component = factory() as? T {
+      dependencies[instanceKey] = WeakReference(component)
+      return component
     }
+    else {
+      fatalError("No dependency found for type \"\(T.self)\", tag \"\(String(describing: tag))\" in scope \"\(String(describing: scope))\"")
+    }
+  }
 
-    precondition(component != nil, "No dependency found for type \(key)")
+  /// Generates a hash key for the dependency type with the specified tag and scope.
+  ///
+  /// - Parameters:
+  ///   - type: The type of the dependency.
+  ///   - tag: A tag to associate with the type.
+  ///   - scope: The name of the scope to bind the dependency to.
+  private func generateKey<T>(for type: T.Type, tag: String?, scope: String?) -> String {
+    var prefix: String = ""
+    var suffix: String = ""
 
-    return component!
+    if let scope = scope { prefix = "\(scope)/" }
+    if let tag = tag { suffix = "@\(tag)" }
+
+    return "\(prefix)\(T.self)\(suffix)"
   }
 }

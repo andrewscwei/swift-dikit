@@ -27,7 +27,17 @@ enum Environment: String {
 }
 
 var dependencies: [Package.Dependency] = [
+
 ]
+
+switch Environment.get() {
+case .local:
+  dependencies.append(.package(path: "../BaseKit"))
+case .development:
+  dependencies.append(.package(name: "BaseKit", url: "git@github.com:sybl/swift-basekit", .branch("main")))
+case .production:
+  dependencies.append(.package(name: "BaseKit", url: "git@github.com:sybl/swift-basekit", from: "0.11.0"))
+}
 
 let package = Package(
   name: "DIKit",
@@ -41,7 +51,7 @@ let package = Package(
   targets: [
     .target(
       name: "DIKit",
-      dependencies: []),
+      dependencies: ["BaseKit"]),
     .testTarget(
       name: "DIKitTests",
       dependencies: ["DIKit"]),
