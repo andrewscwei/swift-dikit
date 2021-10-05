@@ -15,6 +15,9 @@ public class DependencyContainer {
   /// Private initializer to ensure singleton instance.
   private init() {}
 
+  /// Lock queue for thread-safe read/write access to dependency and factory dictionary.
+  private let lockQueue = DispatchQueue(label: "io.sybl.dikit.DependencyContainer.lock-queue", qos: .default, attributes: .concurrent)
+
   /// Dictionary of factory methods for registered dependencies, where the key made up of the
   /// dependency type plus its associated tag at the time of registration.
   private var factories: [String: Factory<Any>] = [:]
@@ -32,7 +35,7 @@ public class DependencyContainer {
   ///   - factory: The factory function.
   public func register<T>(_ type: T.Type = T.self, tag: String? = nil, factory: @escaping Factory<T>) {
     let key = generateKey(for: type, tag: tag, scope: nil)
-    factories[key] = factory
+    addDependencyFactory(factory, forKey: key)
   }
 
   /// Unregisters a dependency from the container.
@@ -43,7 +46,7 @@ public class DependencyContainer {
   ///          the same type).
   public func unregister<T>(_ type: T.Type = T.self, tag: String = "") {
     let key = generateKey(for: type, tag: tag, scope: nil)
-    factories.removeValue(forKey: key)
+    removeDependencyFactory(forKey: key)
   }
 
   /// Resolves a dependency and returns an instance of the dependency matching its registered tag.
@@ -62,17 +65,77 @@ public class DependencyContainer {
   /// - Returns: An instance of the dependency.
   public func resolve<T>(_ type: T.Type = T.self, tag: String? = nil, scope: String? = nil) -> T {
     let factoryKey = generateKey(for: T.self, tag: tag, scope: nil)
-    let instanceKey = generateKey(for: T.self, tag: tag, scope: scope)
+    let dependencyKey = generateKey(for: T.self, tag: tag, scope: scope)
 
-    if let component = dependencies[instanceKey]?.get() as? T {
+    if let component: T = getDependency(forKey: dependencyKey) {
       return component
     }
-    else if let factory = factories[factoryKey], let component = factory() as? T {
-      dependencies[instanceKey] = WeakReference(component)
-      return component
+    else if let factory = getDependencyFactory(forKey: factoryKey), let dependency = factory() as? T {
+      addDependency(dependency, forKey: dependencyKey)
+      return dependency
     }
     else {
       fatalError("No dependency found for type \"\(T.self)\", tag \"\(String(describing: tag))\" in scope \"\(String(describing: scope))\"")
+    }
+  }
+
+  /// Returns the factory method of a dependency type.
+  ///
+  /// - Parameter key: The key of the registered factory.
+  ///
+  /// - Returns: The factory method if it exists.
+  private func getDependencyFactory(forKey key: String) -> Factory<Any>? {
+    lockQueue.sync {
+      factories[key]
+    }
+  }
+
+  /// Adds a factory method for a dependency type at the specified key.
+  ///
+  /// - Parameters:
+  ///   - factory: The factory method.
+  ///   - key: The key for future reference.
+  private func addDependencyFactory<T>(_ factory: @escaping Factory<T>, forKey key: String) {
+    lockQueue.async(flags: .barrier) {
+      self.factories[key] = factory
+    }
+  }
+
+  /// Removes the factory method for the specified key.
+  ///
+  /// - Parameter key: The key.
+  private func removeDependencyFactory(forKey key: String) {
+    lockQueue.async(flags: .barrier) {
+      self.factories.removeValue(forKey: key)
+    }
+  }
+
+  /// Returns the instance of a dependency type registered at the specified key.
+  ///
+  /// - Returns: The dependency instance if it exists.
+  private func getDependency<T>(forKey key: String) -> T? {
+    lockQueue.sync {
+      dependencies[key]?.get() as? T
+    }
+  }
+
+  /// Adds an instance for a dependency type at the specified key.
+  ///
+  /// - Parameters:
+  ///   - dependency: The dependency instance.
+  ///   - key: The key for future reference.
+  private func addDependency<T>(_ dependency: T, forKey key: String) {
+    lockQueue.async(flags: .barrier) {
+      self.dependencies[key] = WeakReference(dependency)
+    }
+  }
+
+  /// Removes the dependency instance for the specified key.
+  ///
+  /// - Parameter key: The key.
+  private func removeDependency(forKey key: String) {
+    lockQueue.async(flags: .barrier) {
+      self.dependencies.removeValue(forKey: key)
     }
   }
 
