@@ -3,13 +3,13 @@ import XCTest
 
 class DependencyInjectionTests: XCTestCase {
 
-  func testSingletonDependencies() {
+  func testDependencies() {
     let container = DependencyContainer.default
     XCTAssertNotNil(container)
 
     class Foo {}
 
-    container.register(Foo.self, component: Foo())
+    container.register(Foo.self) { Foo() }
 
     let foo1 = container.resolve(Foo.self)
     let foo2 = container.resolve(Foo.self)
@@ -17,16 +17,31 @@ class DependencyInjectionTests: XCTestCase {
     XCTAssertTrue(foo1 === foo2)
   }
 
-  func testFactoryDependencies() {
+  func testTaggedDependencies() {
     let container = DependencyContainer.default
     XCTAssertNotNil(container)
 
     class Foo {}
 
-    container.register(Foo.self, factory: { Foo() })
+    container.register(tag: "1") { Foo() }
+    container.register(tag: "2") { Foo() }
 
-    let foo1 = container.resolve(Foo.self)
-    let foo2 = container.resolve(Foo.self)
+    let foo1 = container.resolve(Foo.self, tag: "1")
+    let foo2 = container.resolve(Foo.self, tag: "2")
+
+    XCTAssertTrue(foo1 !== foo2)
+  }
+
+  func testScopedDependencies() {
+    let container = DependencyContainer.default
+    XCTAssertNotNil(container)
+
+    class Foo {}
+
+    container.register { Foo() }
+
+    let foo1 = container.resolve(Foo.self, scope: "1")
+    let foo2 = container.resolve(Foo.self, scope: "2")
 
     XCTAssertTrue(foo1 !== foo2)
   }
@@ -37,7 +52,7 @@ class DependencyInjectionTests: XCTestCase {
 
     class Foo {}
 
-    container.register(Foo.self, factory: { Foo() })
+    container.register(Foo.self) { Foo() }
 
     class Bar {
       @Inject var foo: Foo
