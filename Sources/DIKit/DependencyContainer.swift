@@ -23,7 +23,7 @@ public class DependencyContainer {
 
   /// Dictionary of instantiated dependencies, where the key is made up of the dependency type. its
   /// associated tag at the time of registration, and its scope at the time of resolution.
-  private var dependencies: [String: DependencyReference<AnyObject>] = [:]
+  private var dependencies: [String: DependencyReference<Any>] = [:]
 
   /// Registers a dependency with the container. The dependency is instantiated at resolve time.
   ///
@@ -62,7 +62,7 @@ public class DependencyContainer {
   ///   - scope: An optional scope name for the dependency.
   ///
   /// - Returns: An instance of the dependency.
-  public func resolve<T: AnyObject>(_ type: T.Type = T.self, tag: String? = nil, scope: String? = nil) -> T {
+  public func resolve<T>(_ type: T.Type = T.self, tag: String? = nil, scope: String? = nil) -> T {
     let factoryKey = generateKey(for: T.self, tag: tag, scope: nil)
     let dependencyKey = generateKey(for: T.self, tag: tag, scope: scope)
 
@@ -123,7 +123,7 @@ public class DependencyContainer {
   /// - Parameters:
   ///   - dependency: The dependency instance.
   ///   - key: The key for future reference.
-  private func addDependency<T: AnyObject>(_ dependency: T, forKey key: String) {
+  private func addDependency<T>(_ dependency: T, forKey key: String) {
     lockQueue.async(flags: .barrier) {
       self.dependencies[key] = DependencyReference(dependency)
     }

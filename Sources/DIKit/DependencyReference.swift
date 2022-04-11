@@ -1,12 +1,16 @@
 // © GHOZT
 
-struct DependencyReference<T: AnyObject> {
+public struct DependencyReference<T> {
 
-  weak var dependency: T?
+  private let getDependency: () -> T?
 
-  init(_ dependency: T) {
-    self.dependency = dependency
+  public init(_ dependency: T) {
+    let reference = dependency as AnyObject
+
+    getDependency = { [weak reference] in
+      reference as? T
+    }
   }
 
-  public func get() -> T? { dependency }
+  public func get() -> T? { getDependency() }
 }
