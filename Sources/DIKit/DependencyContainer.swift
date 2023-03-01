@@ -17,20 +17,23 @@ public class DependencyContainer {
   /// Lock queue for thread-safe read/write access to dependency and factory dictionary.
   private let lockQueue = DispatchQueue(label: "io.ghozt.dikit.DependencyContainer.lock-queue", qos: .default, attributes: .concurrent)
 
-  /// Dictionary of factory methods for registered dependencies, where the key made up of the
-  /// dependency type plus its associated tag at the time of registration.
+  /// Dictionary of factory methods for registered dependencies, where the key
+  /// made up of the dependency type plus its associated tag at the time of
+  /// registration.
   private var factories: [String: Factory<Any>] = [:]
 
-  /// Dictionary of instantiated dependencies, where the key is made up of the dependency type. its
-  /// associated tag at the time of registration, and its scope at the time of resolution.
+  /// Dictionary of instantiated dependencies, where the key is made up of the
+  /// dependency type. its associated tag at the time of registration, and its
+  /// scope at the time of resolution.
   private var dependencies: [String: DependencyReference<Any>] = [:]
 
-  /// Registers a dependency with the container. The dependency is instantiated at resolve time.
+  /// Registers a dependency with the container. The dependency is instantiated
+  /// at resolve time.
   ///
   /// - Parameters:
   ///   - type: The type of the dependency.
-  ///   - tag: A tag to associate with the type (to allow providing different implementations for
-  ///          the same type).
+  ///   - tag: A tag to associate with the type (to allow providing different
+  ///          implementations for the same type).
   ///   - factory: The factory function.
   public func register<T>(_ type: T.Type = T.self, tag: String? = nil, factory: @escaping Factory<T>) {
     let key = generateKey(for: type, tag: tag, scope: nil)
@@ -41,24 +44,25 @@ public class DependencyContainer {
   ///
   /// - Parameters:
   ///   - type: The type of the dependency.
-  ///   - tag: A tag to associate with the type (to allow providing different implementations for
-  ///          the same type).
+  ///   - tag: A tag to associate with the type (to allow providing different
+  ///          implementations for the same type).
   public func unregister<T>(_ type: T.Type = T.self, tag: String = "") {
     let key = generateKey(for: type, tag: tag, scope: nil)
     removeDependencyFactory(forKey: key)
   }
 
-  /// Resolves a dependency and returns an instance of the dependency matching its registered tag.
-  /// Option to specify a scope, which if left unspecified as `nil`, will assume the global scope.
-  /// When resolving this dependency, the same instance matching this scope name will always be
-  /// returned. If an instance is not found, it will be instantiated using the registered factory.
-  /// Note that the app will terminate immediately if attempting to resolve an unregistered
-  /// dependency (the type and tag must match).
+  /// Resolves a dependency and returns an instance of the dependency matching
+  /// its registered tag. Option to specify a scope, which if left unspecified
+  /// as `nil`, will assume the global scope. When resolving this dependency,
+  /// the same instance matching this scope name will always be returned. If an
+  /// instance is not found, it will be instantiated using the registered
+  /// factory. Note that the app will terminate immediately if attempting to
+  /// resolve an unregistered dependency (the type and tag must match).
   ///
   /// - Parameters:
   ///   - type: The type of the dependency.
-  ///   - tag: A tag to associate with the type (to allow providing different implementations for
-  ///          the same type).
+  ///   - tag: A tag to associate with the type (to allow providing different
+  ///          implementations for the same type).
   ///   - scope: An optional scope name for the dependency.
   ///
   /// - Returns: An instance of the dependency.
@@ -138,7 +142,8 @@ public class DependencyContainer {
     }
   }
 
-  /// Generates a hash key for the dependency type with the specified tag and scope.
+  /// Generates a hash key for the dependency type with the specified tag and
+  /// scope.
   ///
   /// - Parameters:
   ///   - type: The type of the dependency.
