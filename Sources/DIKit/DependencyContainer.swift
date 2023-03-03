@@ -84,7 +84,8 @@ public class DependencyContainer {
 
   /// Returns the factory method of a dependency type.
   ///
-  /// - Parameter key: The key of the registered factory.
+  /// - Parameters:
+  ///   - key: The key of the registered factory.
   ///
   /// - Returns: The factory method if it exists.
   private func getDependencyFactory(forKey key: String) -> Factory<Any>? {
@@ -106,7 +107,8 @@ public class DependencyContainer {
 
   /// Removes the factory method for the specified key.
   ///
-  /// - Parameter key: The key.
+  /// - Parameters:
+  ///   - key: The key.
   private func removeDependencyFactory(forKey key: String) {
     lockQueue.async(flags: .barrier) {
       self.factories.removeValue(forKey: key)
@@ -135,7 +137,8 @@ public class DependencyContainer {
 
   /// Removes the dependency instance for the specified key.
   ///
-  /// - Parameter key: The key.
+  /// - Parameters:
+  ///   - key: The key.
   private func removeDependency(forKey key: String) {
     lockQueue.async(flags: .barrier) {
       self.dependencies.removeValue(forKey: key)
