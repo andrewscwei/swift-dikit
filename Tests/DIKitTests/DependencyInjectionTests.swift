@@ -2,7 +2,6 @@ import XCTest
 @testable import DIKit
 
 class DependencyInjectionTests: XCTestCase {
-
   func testDependencies() {
     let container = DependencyContainer.default
     XCTAssertNotNil(container)

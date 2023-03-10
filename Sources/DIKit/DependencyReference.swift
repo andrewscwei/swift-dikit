@@ -1,7 +1,6 @@
 // © GHOZT
 
 public struct DependencyReference<T> {
-
   private let getDependency: () -> T?
 
   public init(_ dependency: T) {

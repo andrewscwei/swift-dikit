@@ -4,7 +4,6 @@ import Foundation
 
 /// Singleton dependency injection container.
 public class DependencyContainer {
-
   /// Factory method for creating instances of dependency `T`.
   public typealias Factory<T> = () -> T
 
