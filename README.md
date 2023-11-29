@@ -10,7 +10,3 @@ $ bundle install
 # Run tests
 $ bundle exec fastlane test
 ```
-
----
-
-© GHOZT
