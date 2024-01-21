@@ -5,8 +5,12 @@ DIKit is a dependency injection library for iOS/iPadOS/macOS apps offering a sim
 ## Setup
 
 ```sh
-$ bundle install
+# Prepare Ruby environment
+$ brew install rbenv ruby-build
+$ rbenv install
+$ rbenv rehash
+$ gem install bundler
 
-# Run tests
-$ bundle exec fastlane test
+# Install fastlane
+$ bundle install
 ```
