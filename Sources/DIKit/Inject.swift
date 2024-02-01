@@ -1,5 +1,3 @@
-// © GHOZT
-
 import Foundation
 
 /// Injects the dependency into the wrapped property, assuming that the

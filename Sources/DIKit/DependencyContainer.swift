@@ -1,5 +1,3 @@
-// © GHOZT
-
 import Foundation
 
 /// Singleton dependency injection container.
@@ -14,7 +12,7 @@ public class DependencyContainer {
   private init() {}
 
   /// Lock queue for thread-safe read/write access to dependency and factory dictionary.
-  private let lockQueue = DispatchQueue(label: "sh.ghozt.DIKit.DependencyContainer.lock-queue", qos: .default, attributes: .concurrent)
+  private let lockQueue = DispatchQueue(label: "DIKit.DependencyContainer.lock-queue", qos: .default, attributes: .concurrent)
 
   /// Dictionary of factory methods for registered dependencies, where the key
   /// made up of the dependency type plus its associated tag at the time of

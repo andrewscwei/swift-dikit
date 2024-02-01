@@ -1,5 +1,3 @@
-// © GHOZT
-
 public struct DependencyReference<T> {
   private let getDependency: () -> T?
 
