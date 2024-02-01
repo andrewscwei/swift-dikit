@@ -1,4 +1,4 @@
-# DIKit [![CI](https://github.com/andrewscwei/swift-dikit/workflows/CI/badge.svg?branch=master)](https://github.com/andrewscwei/swift-dikit/actions/workflows/ci.yml?query=branch%3Amaster) [![CD](https://github.com/andrewscwei/swift-dikit/workflows/CD/badge.svg?branch=master)](https://github.com/andrewscwei/swift-dikit/actions/workflows/cd.yml?query=branch%3Amaster)
+# DIKit [![CI](https://github.com/andrewscwei/swift-dikit/workflows/CI/badge.svg)](https://github.com/andrewscwei/swift-dikit/actions/workflows/ci.yml) [![CD](https://github.com/andrewscwei/swift-dikit/workflows/CD/badge.svg)](https://github.com/andrewscwei/swift-dikit/actions/workflows/cd.yml)
 
 DIKit is a dependency injection library for iOS/iPadOS/macOS apps offering a simple interface using the service locator pattern.
 
