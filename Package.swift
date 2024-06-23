@@ -26,10 +26,6 @@ enum Environment: String {
   }
 }
 
-var dependencies: [Package.Dependency] = [
-
-]
-
 switch Environment.get() {
 case .local:
   break
@@ -48,7 +44,7 @@ let package = Package(
       targets: ["DIKit"]
     ),
   ],
-  dependencies: dependencies,
+  dependencies: [],
   targets: [
     .target(
       name: "DIKit"
