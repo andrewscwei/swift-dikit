@@ -1,9 +1,7 @@
 name: CD
 on:
   push:
-    tags: ["v*"]
-  release:
-    types: [published]
+    branches: [master]
 jobs:
   build:
     name: Build
