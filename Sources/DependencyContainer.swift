@@ -1,7 +1,8 @@
 import Foundation
 
 /// Singleton dependency injection container.
-public class DependencyContainer {
+public final class DependencyContainer {
+
   /// Factory method for creating instances of dependency `T`.
   public typealias Factory<T> = () -> T
 
@@ -61,7 +62,6 @@ public class DependencyContainer {
   ///   - tag: A tag to associate with the type (to allow providing different
   ///          implementations for the same type).
   ///   - scope: An optional scope name for the dependency.
-  ///
   /// - Returns: An instance of the dependency.
   public func resolve<T>(_ type: T.Type = T.self, tag: String? = nil, scope: String? = nil) -> T {
     let factoryKey = generateKey(for: T.self, tag: tag, scope: nil)

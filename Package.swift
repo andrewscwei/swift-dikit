@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.9
 
 import PackageDescription
 
@@ -8,50 +8,33 @@ import Glibc
 import Darwin.C
 #endif
 
-enum Environment: String {
-  case local
-  case development
-  case production
-
-  static func get() -> Environment {
-    if let envPointer = getenv("SWIFT_ENV"), let environment = Environment(rawValue: String(cString: envPointer)) {
-      return environment
-    }
-    else if let envPointer = getenv("CI"), String(cString: envPointer) == "true" {
-      return .production
-    }
-    else {
-      return .local
-    }
-  }
-}
-
-switch Environment.get() {
-case .local:
-  break
-case .development:
-  break
-case .production:
-  break
-}
-
 let package = Package(
   name: "DIKit",
-  platforms: [.iOS(.v11)],
+  platforms: [
+    .macOS(.v12),
+    .iOS(.v15),
+    .tvOS(.v15),
+    .watchOS(.v8),
+  ],
   products: [
     .library(
       name: "DIKit",
-      targets: ["DIKit"]
+      targets: [
+        "DIKit",
+      ]
     ),
   ],
-  dependencies: [],
   targets: [
     .target(
-      name: "DIKit"
+      name: "DIKit",
+      path: "Sources"
     ),
     .testTarget(
       name: "DIKitTests",
-      dependencies: ["DIKit"]
-    )
+      dependencies: [
+        "DIKit",
+      ],
+      path: "Tests"
+    ),
   ]
 )
