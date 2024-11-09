@@ -1,7 +1,7 @@
 import Foundation
 
 /// Singleton dependency injection container.
-public final class DependencyContainer {
+public final class DependencyContainer: @unchecked Sendable {
 
   /// Factory method for creating instances of dependency `T`.
   public typealias Factory<T> = () -> T
@@ -13,7 +13,7 @@ public final class DependencyContainer {
   private init() {}
 
   /// Lock queue for thread-safe read/write access to dependency and factory dictionary.
-  private let lockQueue = DispatchQueue(label: "DIKit.DependencyContainer.lock-queue", qos: .default, attributes: .concurrent)
+  private let lockQueue = DispatchQueue(label: "DIKit.DependencyContainer.lock", qos: .default, attributes: .concurrent)
 
   /// Dictionary of factory methods for registered dependencies, where the key
   /// made up of the dependency type plus its associated tag at the time of
@@ -83,7 +83,6 @@ public final class DependencyContainer {
   ///
   /// - Parameters:
   ///   - key: The key of the registered factory.
-  ///
   /// - Returns: The factory method if it exists.
   private func getDependencyFactory(forKey key: String) -> Factory<Any>? {
     lockQueue.sync {
@@ -97,8 +96,8 @@ public final class DependencyContainer {
   ///   - factory: The factory method.
   ///   - key: The key for future reference.
   private func addDependencyFactory<T>(_ factory: @escaping Factory<T>, forKey key: String) {
-    lockQueue.async(flags: .barrier) {
-      self.factories[key] = factory
+    lockQueue.sync(flags: .barrier) {
+      factories[key] = factory
     }
   }
 
@@ -107,8 +106,8 @@ public final class DependencyContainer {
   /// - Parameters:
   ///   - key: The key.
   private func removeDependencyFactory(forKey key: String) {
-    lockQueue.async(flags: .barrier) {
-      self.factories.removeValue(forKey: key)
+    lockQueue.sync(flags: .barrier) {
+      _ = factories.removeValue(forKey: key)
     }
   }
 
@@ -127,8 +126,8 @@ public final class DependencyContainer {
   ///   - dependency: The dependency instance.
   ///   - key: The key for future reference.
   private func addDependency<T>(_ dependency: T, forKey key: String) {
-    lockQueue.async(flags: .barrier) {
-      self.dependencies[key] = DependencyReference(dependency)
+    lockQueue.sync(flags: .barrier) {
+      dependencies[key] = DependencyReference(dependency)
     }
   }
 
@@ -137,8 +136,8 @@ public final class DependencyContainer {
   /// - Parameters:
   ///   - key: The key.
   private func removeDependency(forKey key: String) {
-    lockQueue.async(flags: .barrier) {
-      self.dependencies.removeValue(forKey: key)
+    lockQueue.sync(flags: .barrier) {
+      _ = dependencies.removeValue(forKey: key)
     }
   }
 
